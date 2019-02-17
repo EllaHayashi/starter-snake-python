@@ -56,8 +56,43 @@ def move():
     """
     print(json.dumps(data))
 
+
+
+
     directions = ['up', 'down', 'left', 'right']
-    direction = random.choice(directions)
+    #direction = random.choice(directions)
+    boardheight = data['board']['height']
+    boardwidth = data['board']['width']
+
+    ourHead = data['you']['body'][0]
+    
+    rightTopCorner = ourHead['y']==0 and ourHead['x']==boardwidth-1
+    origin = ourHead['y']==0 and ourHead['x']==0
+    leftBottomCorner = ourHead['x']==0 and ourHead['y']==boardheight-1
+    rightBottomCorner = ourHead['x']==boardwidth-1 and ourHead['y']==boardheight-1
+    rightWall = ourHead['x']==boardwidth-1
+    bottomWall = ourHead['y']==boardheight-1
+    leftWall = ourHead['x']==0
+    topWall = ourHead['y']==0
+    
+    if(rightTopCorner):
+        direction = 'left'
+    elif(origin):
+        direction = 'down'
+    elif(leftBottomCorner):
+        direction = 'right'
+    elif(rightBottomCorner):
+        direction = 'up'
+    elif (rightWall):
+        direction = 'up'
+    elif (bottomWall):
+        direction = 'right'
+    elif (leftWall):
+        direction = 'down'
+    elif (topWall):
+        direction = 'left'
+    else:
+        direction = 'up'
 
     return move_response(direction)
 
@@ -70,6 +105,12 @@ def end():
     TODO: If your snake AI was stateful,
         clean up any stateful objects here.
     """
+    
+    # x=data['turn']
+    
+
+# print(x)
+    
     print(json.dumps(data))
 
     return end_response()
@@ -84,3 +125,20 @@ if __name__ == '__main__':
         port=os.getenv('PORT', '8080'),
         debug=os.getenv('DEBUG', True)
     )
+
+def move():
+    data = bottle.request.json
+
+    """
+    TODO: Using the data from the endpoint request object, your
+            snake AI must choose a direction to move in.
+    """
+    print(json.dumps(data))
+
+    directions = ['up', 'down', 'left', 'right']
+    direction = random.choice(directions)
+
+    return move_response(direction)
+
+
+
