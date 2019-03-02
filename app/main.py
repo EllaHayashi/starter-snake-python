@@ -506,7 +506,7 @@ def returnDirection(path):
         direction = 'right'
         print('random direction chosen!')
     return direction 
->>>>>>> 8ddeffa6f5904453b94dfc497b9287a638833910
+
 
 
 @bottle.route('/')
@@ -634,7 +634,7 @@ def move():
     
         print("it was valid af")
         return move_response(direction)
-=======
+
 
 @bottle.post('/move')
 def move():
@@ -682,7 +682,7 @@ def move():
 #    print(data)
     
     return move_response(direction)
->>>>>>> 8ddeffa6f5904453b94dfc497b9287a638833910
+
 
     else:
         print("it was not valid boo")
