@@ -49,14 +49,87 @@ def enemyAllPos(data):
     xx = [] #initializing
     yy = [] #initializing
     #looping to find an appended list of x and y coordinates of all enemy snakes
+    
+    
+    
     for s in range(numEnemies):
         x,y = enemy1Pos(data,s)
         xx += x
         yy += y
+        
+#    for i in len(numEnemies):
+#        snakeHead = data['board']['snakes'][i][0]
+
+    
     return xx,yy
 
+def determineNextCoordinate(direction, Head):
+    newDirectionX = Head[0]
+    newDirectionY = Head[1]
+    if direction == 'right':    
+       newDirectionX += 1	
+    if direction == 'left':    
+       newDirectionX -= 1   
+    if direction == 'up':    
+       newDirectionY -=1 
+    if direction == 'down':    
+       newDirectionY += 1
+    return (newDirectionX, newDirectionY)
 	
 	
+def enemyCoordinate(coordinate, data):
+    for i in range(len(data['board']['snakes'])):
+        for j in range(len(data['board']['snakes'][i]['body'])):
+            enemyCoord = data['board']['snakes'][i]['body'][j]
+            if(coordinate[0] == enemyCoord[0] and coordinate[1] == enemyCoord[1]):
+               return true
+               
+    return false
+    
+def ourCoordinate(coordinate, data):
+    for i in range(len(data['you']['body'])):
+        bodyCoord = data['you']['body'][i][0]
+        if(coordinate[0] == bodyCoord[0] and coordinate[1] == bodyCoord[1]):
+            return true
+               
+    return false
+	
+def directionValid(newDirection, data):
+	
+	#not a wall
+    if(newDirection[0]<0 or newDirection[0]>=data['board']['width']):
+        return false
+    elif(newDirection[1]<0 or newDirection[1]>=data['board']['height']):
+        return false
+	
+	
+	#not a snake
+    elif enemyCoordinate(newDirection, data) is true:
+        return false
+	
+	
+	#not its body
+    elif ourCoordinate(newDirection, data) is true:
+        return false
+	
+	#not future snake
+
+
+def directionFromCoordinate(coordinate, Head):
+    Headx = Head[0]
+    Heady = Head[1]
+    direction = ''
+    
+    if coordinate[0] == Headx + 1:
+       direction = 'right'
+    elif coordinate[0] == Headx - 1:
+       direction = 'left'
+    elif coordinate[1] == Heady + 1:
+       direction = 'down'
+    elif coordinate[1] == Heady - 1:
+       direction = 'up'
+    
+    return direction
     
 #Gives the x,y as a list of int values of the a snake given 'numSnake' which starts at 0  
 def enemy1Pos(data,numSnake):
@@ -128,11 +201,11 @@ def astar(maze, start, end, data):
     i=0
     # Loop until you find the end
     while len(open_list) > 0:
-        i=i+1
-        if i>200:
-        	break
-        else:
-            print(str(len(open_list)))
+ #       i=i+1
+  #      if i>200:
+  #      	break
+#        else:
+ #           print(str(len(open_list)))
         # Get the current node
         current_node = open_list[0]
         current_index = 0
@@ -316,12 +389,43 @@ def move():
     print('path:')
     print(path)
     
+    
+
+    
     #determining direction
     direction = (returnDirection(path))
+    
+    #find out cordonate of next direction 
+#    newDirection = determineNextCoordinate(direction, getSelfHeadPos(data))  
+    
+    
+    
     print('direction:')
+    
     print(direction)
     
     return move_response(direction)
+    
+    #determine weather or now the new Direction is valid
+"""    
+    if directionValid(newDirection, data) is true:
+    
+        print("it was valid af")
+        return move_response(direction)
+
+    else:
+        print("it was not valid boo")
+        for new_position in [(0, -1), (0, 1), (-1, 0), (1, 0)]: # Adjacent squares
+        	# Get node position
+            node_position = (current_node.position[0] + new_position[0], current_node.position[1] + new_position[1])
+            if directionValid(node_position, data) is true:
+    			direction2 = directionFromCoordinate(node_position, getSelfHeadPos(data))
+    			return move_response(direction2)
+    		
+    
+        #pick a clear direction
+"""
+#     return move_response(direction)   
     
 
 @bottle.post('/end')
