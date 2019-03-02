@@ -68,19 +68,22 @@ def astar(maze, start, end):
                 current = current.parent
             return path[::-1] # Return reversed path
 
-        if (i>100):
-          return[(current_node.position[0]-1, current_node.position[1]-1)]
-        else:
-          i=i+1
 
+        i=i+1
+        # backup path
+        b_path = []
+        num_items_in_bpath = 0
 
 
         # Generate children
         children = []
         for new_position in [(0, -1), (0, 1), (-1, 0), (1, 0)]: # Adjacent squares
 
-            # Get node position
-            node_position = (current_node.position[0] + new_position[0], current_node.position[1] + new_position[1])
+            # if we are in the infinite loop, go from b_path's first node, not where we are
+            if (i>1000 and num_items_in_bpath>0):
+              node_position = b_path[0][0] + new_position[0], b_path[0][1] + new_position[1]
+            else: # Get node position
+              node_position = (current_node.position[0] + new_position[0], current_node.position[1] + new_position[1])
 
             # Make sure within range
             if node_position[0] > (len(maze) - 1) or node_position[0] < 0 or node_position[1] > (len(maze[len(maze)-1]) -1) or node_position[1] < 0:
@@ -92,6 +95,15 @@ def astar(maze, start, end):
 
             # Create new node
             new_node = Node(current_node, node_position)
+
+            
+            # if we get into an infinite loop, create a fake path
+            if (i>1000 and num_items_in_bpath<2):
+              print("CHANGING PATH")
+              b_path.append(node_position)
+              num_items_in_bpath=num_items_in_bpath+1
+            elif (i>1000 and  num_items_in_bpath >= 2):
+              return b_path
 
             # Append
             children.append(new_node)
@@ -218,6 +230,10 @@ def closestFruit(data):
 
 #provides the string direction: 'up','down','left','right' from the path
 def returnDirection(path):
+    
+    print("path[0]:" + str(path[0]))
+    print("path[1]:" + str(path[1]))
+
     arrayDirection = np.subtract(path[1],path[0])
     if (arrayDirection == ([0,-1])).all():
         direction = 'up'
@@ -229,7 +245,7 @@ def returnDirection(path):
         direction = 'right'
     else:
         direction = 'right'
-        print('random direction chosen!')
+        print('random direction chosen!: right')
     return direction 
 
 
