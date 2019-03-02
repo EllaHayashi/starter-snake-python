@@ -40,6 +40,7 @@ def astar(maze, start, end):
     # Add the start node
     open_list.append(start_node)
 
+    i = 0 #initializing 
     # Loop until you find the end
     while len(open_list) > 0:
 
@@ -64,12 +65,21 @@ def astar(maze, start, end):
                 current = current.parent
             return path[::-1] # Return reversed path
 
+        i = i+1
+        # backup path
+        b_path = [] 
+        num_items_in_bpath = 0
+        
         # Generate children
         children = []
         for new_position in [(0, -1), (0, 1), (-1, 0), (1, 0)]: # Adjacent squares
 
-            # Get node position
-            node_position = (current_node.position[0] + new_position[0], current_node.position[1] + new_position[1])
+            
+            if(i>1000 and num_items_in_bpath>0):
+                node_position = b_path[0][0] + new_position[0], b_path[0][1]+new_position[1]
+            else:   
+                # Get node position
+                node_position = (current_node.position[0] + new_position[0], current_node.position[1] + new_position[1])
 
             # Make sure within range
             if node_position[0] > (len(maze) - 1) or node_position[0] < 0 or node_position[1] > (len(maze[len(maze)-1]) -1) or node_position[1] < 0:
@@ -312,11 +322,23 @@ def move():
     ownXLoc, ownYLoc = getSelfPos(data) #obtaining own snake location on maze
     enemyHeadMoveX, enemyHeadMoveY = enemySurroundHeadPos(data) #obtaining locations of the potential location of future enemy heads 
 #    print('enemy head 4 locss')
-    print(enemyHeadMoveX, enemyHeadMoveY)
+#    print(enemyHeadMoveX, enemyHeadMoveY)
     
     maze[enemyXLoc, enemyYLoc] = 1 #marking locations of other snakes on maze
     maze[ownXLoc, ownYLoc] = 1 #marking self location on maze
     maze[enemyHeadMoveX, enemyHeadMoveY] = 1 #marking locations of potential enemy sneakhead movements on maze
+    
+    
+#    #blocking off maze edges
+#    boardx = data['board']['height'] 
+#    boardy = data['board']['width']
+#    for x in range(0,boardx):
+#        maze[x,0] = 1
+#        maze[x,boardy-1] = 1
+#    for y in range(0,boardy):
+#        maze[0,y] = 1
+#        maze[boardx-1,y] = 1
+    
 
     #obtaining 'start' for astar 
     start = getSelfHeadPos(data) #using current head location as 'start'
@@ -333,11 +355,11 @@ def move():
     
     #determining direction
     direction = (returnDirection(path))
-#    print('direction:')
-#    print(direction)
-#    print(data)
-    print('data of snake:')
+    print('direction:')
+    print(direction)
     print(data)
+#    print('data of snake:')
+#    print(data)
     return {"move": direction}
 
 
