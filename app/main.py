@@ -3,9 +3,9 @@ import os
 import random
 import bottle
 import numpy as np
-import math
 
 from api import ping_response, start_response, move_response, end_response
+
 
 # A Star Implementation from: https://medium.com/@nicholas.w.swift/easy-a-star-pathfinding-7e6689c7f7b2
 class Node():
@@ -22,87 +22,8 @@ class Node():
     def __eq__(self, other):
         return self.position == other.position
 
-#Returns the maze filled with zeros
-def returnMaze(data):
-    boardx = data['board']['height']
-    boardy = data['board']['width']
-    maze = np.zeros((boardx,boardy),dtype=int)
-    return maze
-
-#Gives the (int) x and y position of our OWN snake in two lists (x, y)
-def getSelfPos(data):
-    snake = data['you']['body']
-    x = [snakePos['x'] for snakePos in snake]
-    y = [snakePos['y'] for snakePos in snake]
-    return x,y
-
-# return the current head postion of OWN snake in (int) as a tuple
-def getSelfHeadPos(data):
-    xself,yself = getSelfPos(data)
-    x = xself[0]
-    y = yself[0]
-    return (x,y)
-
-#Gives the (int) x and y position of all enemies in a two lists (xx, yy)
-def enemyAllPos(data):
-    numEnemies = enemyCount(data)
-    xx = [] #initializing
-    yy = [] #initializing
-    #looping to find an appended list of x and y coordinates of all enemy snakes
-    for s in range(numEnemies):
-        x,y = enemy1Pos(data,s)
-        xx += x
-        yy += y
-    return xx,yy
     
-#Gives the x,y as a list of int values of the a snake given 'numSnake' which starts at 0  
-def enemy1Pos(data,numSnake):
-    snake = data['board']['snakes'][numSnake]['body']
-    x = [snakePos['x'] for snakePos in snake]
-    y = [snakePos['y'] for snakePos in snake]
-    return x,y
-    
-#Gives the number of enemies still alive
-def enemyCount(data):
-    numEnemies = sum(1 for enemies in data['board']['snakes'])
-    return numEnemies
-
-#Finding location of fruits
-def fruitLoc(data):
-    snake = data['board']['food']
-    x = [snakePos['x'] for snakePos in snake]
-    y = [snakePos['y'] for snakePos in snake]
-    return x,y
-    
-#Finding nearest fruit to head. Returns position as a tuple (int) x,y
-def closestFruit(data):
-    fx,fy = fruitLoc(data) #getting x,y of all fruits
-    hx,hy = getSelfHeadPos(data) #getting position of head
-    distx = np.array(fx) - hx
-    disty = np.array(fy) - hy
-    distx *= distx #calculating the square
-    disty *= disty #calculating the square
-    dist = distx+disty #calculating distance (without taking sqrt)
-    indexMin = np.argmin(dist) #checked: only returns one index which is good
-    return (fx[indexMin],fy[indexMin])
-    
- #provides the string direction: 'up','down','left','right' from the path
-def returnDirection(path):
-    arrayDirection = np.subtract(path[1],path[0])
-    
-    if (arrayDirection== ([0,-1])).all():
-        direction = 'up'
-    elif (arrayDirection== ([0,1])).all():
-        direction = 'down'
-    elif (arrayDirection== ([-1,0])).all():
-        direction = 'left'
-    elif (arrayDirection== ([1,0])).all():
-        direction = 'right'
-    else:
-        direction = 'right'
-    return direction   
-    
-#A* Algorithm
+#A* Algorithm    
 def astar(maze, start, end):
     """Returns a list of tuples as a path from the given start to the given end in the given maze"""
 
@@ -184,8 +105,121 @@ def astar(maze, start, end):
 
             # Add the child to the open list
             open_list.append(child)
+    
+    
+    
+#Returns the maze filled with zeros
+def returnMaze(data):
+    boardx = data['board']['height']
+    boardy = data['board']['width']
+    maze = np.zeros((boardx,boardy),dtype=int)
+    return maze
 
+#Gives the (int) x and y position of our OWN snake in two lists (x, y)
+def getSelfPos(data):
+    snake = data['you']['body']
+    x = [snakePos['x'] for snakePos in snake]
+    y = [snakePos['y'] for snakePos in snake]
+    return x,y
 
+# return the current head postion of OWN snake in (int) as a tuple
+def getSelfHeadPos(data):
+    xself,yself = getSelfPos(data)
+    x = xself[0]
+    y = yself[0]
+    return (x,y)
+
+#Gives the entire position of snakes 
+def enemyAllPos(data):
+    numEnemies = enemyCount(data)
+    xx = [] #initializing
+    yy = [] #initializing
+    if numEnemies > 0:
+        #looping to find an appended list of x and y coordinates of all enemy snakes
+        for s in range(numEnemies):
+            x,y = enemy1Pos(data,s+1)
+            xx += x
+            yy += y
+    return xx,yy
+
+#Gives the x,y as a list of int values of the a snake given 'numSnake' which starts at 0  
+def enemy1Pos(data,numSnake):
+    snake = data['board']['snakes'][numSnake]['body']
+    x = [snakePos['x'] for snakePos in snake]
+    y = [snakePos['y'] for snakePos in snake]
+    return x,y
+
+#Gives the position of surrounding position of enemies heads and their potential 'next step'
+def enemySurroundHeadPos(data):
+    numEnemies = enemyCount(data)
+    xx = [] #initializing
+    yy = [] #initializing
+    direction_x = [0, 0, -1, 1] # referring to up, down, left, right
+    direction_y = [-1, 1, 0, 0] # referring to up, down, left, right
+    
+    if numEnemies > 0:
+        #looping to find the 4 locations surrounding the head
+        for s in range(numEnemies+1):
+            x,y = enemy1Pos(data,s)
+        
+            headx = x[0]
+            heady = y[0]
+#            print('head of enemy')
+#            print((headx,heady))
+#            print('head of  own')
+#            print(getSelfHeadPos(data))
+            if not((headx,heady) == getSelfHeadPos(data)):
+#                print('got that the heads are different')
+                #looping through the directions
+                for rr in range(4):
+                    dir = [(headx)+direction_x[rr],(heady+direction_y[rr])] #find the 4 locations an enemie's head can move into in the next step
+                    if (int(dir[0]) in range(0,(data['board']['height']-1)) and int(dir[1]) in range(0,(data['board']['width']-1))): #making sure the ranges are not out of bounds for x or y
+                        xx+= [dir[0]]
+                        yy+= [dir[1]]
+    
+#    print('surrounding head:')
+#    print(xx,yy)
+    return xx,yy
+
+#Gives the number of enemies still alive
+def enemyCount(data):
+    numEnemies = sum(1 for enemies in data['board']['snakes']) -1 # minus one because the board counts itself in "snakes"
+    return numEnemies
+
+#Finding location of fruits
+def fruitLoc(data):
+    snake = data['board']['food']
+    x = [snakePos['x'] for snakePos in snake]
+    y = [snakePos['y'] for snakePos in snake]
+    return x,y
+
+#Finding nearest fruit to head. Returns position as a tuple (int) x,y
+def closestFruit(data):
+    fx,fy = fruitLoc(data) #getting x,y of all fruits
+    hx,hy = getSelfHeadPos(data) #getting position of head
+    distx = np.array(fx) - hx
+    disty = np.array(fy) - hy
+    distx *= distx #calculating the square
+    disty *= disty #calculating the square
+    dist = distx+disty #calculating distance (without taking sqrt)
+    indexMin = np.argmin(dist) #checked: only returns one index which is good
+    return (fx[indexMin],fy[indexMin])
+
+#provides the string direction: 'up','down','left','right' from the path
+def returnDirection(path):
+    arrayDirection = np.subtract(path[1],path[0])
+    if (arrayDirection == ([0,-1])).all():
+        direction = 'up'
+    elif (arrayDirection == ([0,1])).all():
+        direction = 'down'
+    elif (arrayDirection == ([-1,0])).all():
+        direction = 'left'
+    elif (arrayDirection == ([1,0])).all():
+        direction = 'right'
+    else:
+        direction = 'right'
+        print('random direction chosen!')
+    return direction 
 
 
 @bottle.route('/')
@@ -232,6 +266,7 @@ def start():
     boardy = data['board']['width']
     print(boardx)
     print(boardy)
+
     color = "#00FF00"
 
     return start_response(color)
@@ -240,52 +275,56 @@ def start():
 @bottle.post('/move')
 def move():
     data = bottle.request.json
-    print(" ")
-    print("Next Step:")
     """
     TODO: Using the data from the endpoint request object, your
             snake AI must choose a direction to move in.
     """
-    #print(data)
-    #print(data['board']['food'])
-    print('--')
+#    print('--')
     numEnemies = enemyCount(data)
-    print(numEnemies)
-    print(data['you'])
-    
+    #print(numEnemies)
+#    print(data['turn'])
     
 
-    directions = ['up', 'down', 'left', 'right']
-    
     #obtaining 'maze' for astar
     maze = returnMaze(data) #obtaining maze (size)
+    
     enemyXLoc, enemyYLoc = enemyAllPos(data) #obtaing locations of enemies on maze
     ownXLoc, ownYLoc = getSelfPos(data) #obtaining own snake location on maze
+    enemyHeadMoveX, enemyHeadMoveY = enemySurroundHeadPos(data) #obtaining locations of the potential location of future enemy heads 
+#    print('enemy head 4 locss')
+    print(enemyHeadMoveX, enemyHeadMoveY)
+    
     maze[enemyXLoc, enemyYLoc] = 1 #marking locations of other snakes on maze
     maze[ownXLoc, ownYLoc] = 1 #marking self location on maze
-  
+    maze[enemyHeadMoveX, enemyHeadMoveY] = 1 #marking locations of potential enemy sneakhead movements on maze
+
     #obtaining 'start' for astar 
     start = getSelfHeadPos(data) #using current head location as 'start'
+#    print(start)
     
     #obtaining 'end' for astar 
     end = closestFruit(data)
+#    print(end)
     
     #calculating astar for the shortest path
     path = astar(maze, start, end)
-    print('path:')
-    print(path)
+#    print('path:')
+#    print(path)
     
     #determining direction
     direction = (returnDirection(path))
-    print('direction:')
-    print(direction)
-    
+#    print('direction:')
+#    print(direction)
+#    print(data)
+    print('data of snake:')
+    print(data)
     return move_response(direction)
-    
+
 
 @bottle.post('/end')
 def end():
     data = bottle.request.json
+    print(data)
 
     """
     TODO: If your snake AI was stateful,
