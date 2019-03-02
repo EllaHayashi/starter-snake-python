@@ -339,7 +339,7 @@ def move():
 #    print(data)
     print('data of snake:')
     print(data)
-    return move_response(direction)
+    return {"move": direction}
 
 
 @bottle.post('/end')
