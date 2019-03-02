@@ -134,10 +134,11 @@ def enemyAllPos(data):
     numEnemies = enemyCount(data)
     xx = [] #initializing
     yy = [] #initializing
-    if numEnemies > 0:
-        #looping to find an appended list of x and y coordinates of all enemy snakes
-        for s in range(numEnemies):
-            x,y = enemy1Pos(data,s+1)
+    selfx,selfy = getSelfPos(data) 
+    #looping to find an appended list of x and y coordinates of all enemy snakes
+    for s in range(numEnemies+1): #need to include +1 because location of 'self' also has to be considered
+        x,y = enemy1Pos(data,s)
+        if not(x == selfx or y == selfy):
             xx += x
             yy += y
     return xx,yy
@@ -157,29 +158,30 @@ def enemySurroundHeadPos(data):
     direction_x = [0, 0, -1, 1] # referring to up, down, left, right
     direction_y = [-1, 1, 0, 0] # referring to up, down, left, right
     
-    if numEnemies > 0:
-        #looping to find the 4 locations surrounding the head
-        for s in range(numEnemies+1):
-            x,y = enemy1Pos(data,s)
-        
-            headx = x[0]
-            heady = y[0]
-#            print('head of enemy')
-#            print((headx,heady))
-#            print('head of  own')
-#            print(getSelfHeadPos(data))
-            if not((headx,heady) == getSelfHeadPos(data)):
-#                print('got that the heads are different')
-                #looping through the directions
-                for rr in range(4):
-                    dir = [(headx)+direction_x[rr],(heady+direction_y[rr])] #find the 4 locations an enemie's head can move into in the next step
-                    if (int(dir[0]) in range(0,(data['board']['height']-1)) and int(dir[1]) in range(0,(data['board']['width']-1))): #making sure the ranges are not out of bounds for x or y
-                        xx+= [dir[0]]
-                        yy+= [dir[1]]
     
-#    print('surrounding head:')
-#    print(xx,yy)
+    #looping to find the 4 locations surrounding the head
+    for s in range(numEnemies):
+        x,y = enemy1Pos(data,s)
+    
+        headx = x[0]
+        heady = y[0]
+        print('head of enemy')
+        print((headx,heady))
+        print('head of  own')
+        print(getSelfHeadPos(data))
+        if not((headx,heady) == getSelfHeadPos(data)):
+            print('got that the heads are different')
+            #looping through the directions
+            for rr in range(4):
+                dir = [(headx)+direction_x[rr],(heady+direction_y[rr])] #find the 4 locations an enemie's head can move into in the next step
+                if (int(dir[0]) in range(0,(data['board']['height']-1)) and int(dir[1]) in range(0,(data['board']['width']-1))): #making sure the coords are within the board range
+                    xx+= [dir[0]]
+                    yy+= [dir[1]]
+    
+    print('surrounding head:')
+    print(xx,yy)
     return xx,yy
+
 
 #Gives the number of enemies still alive
 def enemyCount(data):
@@ -194,16 +196,35 @@ def fruitLoc(data):
     return x,y
 
 #Finding nearest fruit to head. Returns position as a tuple (int) x,y
-def closestFruit(data):
+def closestFruit(data,maze):
     fx,fy = fruitLoc(data) #getting x,y of all fruits
     hx,hy = getSelfHeadPos(data) #getting position of head
-    distx = np.array(fx) - hx
-    disty = np.array(fy) - hy
+    viableFruitx = [0] #initializing viable fruit locations (x)
+    viableFruity = [0] #initializing viable fruit locations (y)
+    flag = 0
+    for j in range(0,len(fx)): # determining where fruits might be covered by potential snake moves
+        if (maze[fx[j],fy[j]] == 0):
+            print('')
+            viableFruitx += [fx[j]]
+            viableFruity += [fy[j]] 
+    # if all fruits are covered up, gg and just go for one anyways, merp. 
+    if viableFruitx == []:
+        viableFruitx = fx
+        viableFruity = fy
+        flag = 1
+    
+    distx = np.array(viableFruitx) - hx
+    disty = np.array(viableFruity) - hy
     distx *= distx #calculating the square
     disty *= disty #calculating the square
     dist = distx+disty #calculating distance (without taking sqrt)
     indexMin = np.argmin(dist) #checked: only returns one index which is good
-    return (fx[indexMin],fy[indexMin])
+    if flag == 1:
+        if indexMin == 0:
+            indexMin = 1
+        else:
+            indexMin = 0
+    return (viableFruitx[indexMin],viableFruity[indexMin])
 
 #provides the string direction: 'up','down','left','right' from the path
 def returnDirection(path):
@@ -303,7 +324,7 @@ def move():
 #    print(start)
     
     #obtaining 'end' for astar 
-    end = closestFruit(data)
+    end = closestFruit(data,maze)
 #    print(end)
     
     #calculating astar for the shortest path
