@@ -209,8 +209,8 @@ def fruitLoc(data):
 def closestFruit(data,maze):
     fx,fy = fruitLoc(data) #getting x,y of all fruits
     hx,hy = getSelfHeadPos(data) #getting position of head
-    viableFruitx = [0] #initializing viable fruit locations (x)
-    viableFruity = [0] #initializing viable fruit locations (y)
+    viableFruitx = [] #initializing viable fruit locations (x)
+    viableFruity = [] #initializing viable fruit locations (y)
     flag = 0
     for j in range(0,len(fx)): # determining where fruits might be covered by potential snake moves
         if (maze[fx[j],fy[j]] == 0):
@@ -322,22 +322,22 @@ def move():
     ownXLoc, ownYLoc = getSelfPos(data) #obtaining own snake location on maze
     enemyHeadMoveX, enemyHeadMoveY = enemySurroundHeadPos(data) #obtaining locations of the potential location of future enemy heads 
 #    print('enemy head 4 locss')
-#    print(enemyHeadMoveX, enemyHeadMoveY)
+    print(enemyHeadMoveX, enemyHeadMoveY)
     
     maze[enemyXLoc, enemyYLoc] = 1 #marking locations of other snakes on maze
     maze[ownXLoc, ownYLoc] = 1 #marking self location on maze
     maze[enemyHeadMoveX, enemyHeadMoveY] = 1 #marking locations of potential enemy sneakhead movements on maze
     
     
-#    #blocking off maze edges
-#    boardx = data['board']['height'] 
-#    boardy = data['board']['width']
-#    for x in range(0,boardx):
-#        maze[x,0] = 1
-#        maze[x,boardy-1] = 1
-#    for y in range(0,boardy):
-#        maze[0,y] = 1
-#        maze[boardx-1,y] = 1
+    #blocking off maze edges
+    boardx = data['board']['height'] 
+    boardy = data['board']['width']
+    for x in range(0,boardx):
+        maze[x,0] = 1
+        maze[x,boardy-1] = 1
+    for y in range(0,boardy):
+        maze[0,y] = 1
+        maze[boardx-1,y] = 1
     
 
     #obtaining 'start' for astar 
