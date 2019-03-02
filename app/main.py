@@ -54,6 +54,9 @@ def enemyAllPos(data):
         xx += x
         yy += y
     return xx,yy
+
+	
+	
     
 #Gives the x,y as a list of int values of the a snake given 'numSnake' which starts at 0  
 def enemy1Pos(data,numSnake):
@@ -84,6 +87,10 @@ def closestFruit(data):
     disty *= disty #calculating the square
     dist = distx+disty #calculating distance (without taking sqrt)
     indexMin = np.argmin(dist) #checked: only returns one index which is good
+    
+    print("Closest fruit")
+    print(str(fx[indexMin]) + " " + str(fy[indexMin]))
+    
     return (fx[indexMin],fy[indexMin])
     
  #provides the string direction: 'up','down','left','right' from the path
@@ -103,7 +110,7 @@ def returnDirection(path):
     return direction   
     
 #A* Algorithm
-def astar(maze, start, end):
+def astar(maze, start, end, data):
     """Returns a list of tuples as a path from the given start to the given end in the given maze"""
 
     # Create start and end node
@@ -118,10 +125,14 @@ def astar(maze, start, end):
 
     # Add the start node
     open_list.append(start_node)
-
+    i=0
     # Loop until you find the end
     while len(open_list) > 0:
-
+        i=i+1
+        if i>200:
+        	break
+        else:
+            print(str(len(open_list)))
         # Get the current node
         current_node = open_list[0]
         current_index = 0
@@ -145,26 +156,44 @@ def astar(maze, start, end):
 
         # Generate children
         children = []
+        
+        
         for new_position in [(0, -1), (0, 1), (-1, 0), (1, 0)]: # Adjacent squares
-
+			
             # Get node position
             node_position = (current_node.position[0] + new_position[0], current_node.position[1] + new_position[1])
 
             # Make sure within range
+            #if node_position[0] > (len(maze) - 1) or node_position[0] < 0 or node_position[1] > (len(maze[len(maze)-1]) -1) or node_position[1] < 0:
             if node_position[0] > (len(maze) - 1) or node_position[0] < 0 or node_position[1] > (len(maze[len(maze)-1]) -1) or node_position[1] < 0:
                 continue
+
+			# Make sure not enemy snake
+            enemyXLoc, enemyYLoc = enemyAllPos(data)
+            if node_position[0] not in enemyXLoc and node_position[1] not in enemyYLoc:
+                continue
+			
+#            if node_position[0]>-1 and node_position[0]<len(maze) or node_position[1]>-1 and node_position[1]<len(maze):
+#                continue
+
 
             # Make sure walkable terrain
             if maze[node_position[0]][node_position[1]] != 0:
                 continue
 
+			# See if found another food node
+			
+
+
             # Create new node
             new_node = Node(current_node, node_position)
-
+#            print("**********")
+ #           print(str(node_position[0]) + " " + str(node_position[1]))
             # Append
             children.append(new_node)
 
         # Loop through children
+        
         for child in children:
 
             # Child is on the closed list
@@ -236,6 +265,12 @@ def start():
 
     return start_response(color)
 
+#def getBoardWidth(data)
+#	return data['board']['width']
+
+#def getBoardHeight(data)
+#	return data['board']['height']
+
 
 @bottle.post('/move')
 def move():
@@ -259,19 +294,25 @@ def move():
     
     #obtaining 'maze' for astar
     maze = returnMaze(data) #obtaining maze (size)
+    
+
     enemyXLoc, enemyYLoc = enemyAllPos(data) #obtaing locations of enemies on maze
     ownXLoc, ownYLoc = getSelfPos(data) #obtaining own snake location on maze
     maze[enemyXLoc, enemyYLoc] = 1 #marking locations of other snakes on maze
     maze[ownXLoc, ownYLoc] = 1 #marking self location on maze
+    
+
   
     #obtaining 'start' for astar 
     start = getSelfHeadPos(data) #using current head location as 'start'
     
+
     #obtaining 'end' for astar 
     end = closestFruit(data)
     
+
     #calculating astar for the shortest path
-    path = astar(maze, start, end)
+    path = astar(maze, start, end, data)
     print('path:')
     print(path)
     
