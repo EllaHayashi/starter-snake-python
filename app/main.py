@@ -75,7 +75,7 @@ def astar(maze, start, end):
         for new_position in [(0, -1), (0, 1), (-1, 0), (1, 0)]: # Adjacent squares
 
             
-            if(i>1000 and num_items_in_bpath>0):
+            if(i>200 and num_items_in_bpath>0):
                 node_position = b_path[0][0] + new_position[0], b_path[0][1]+new_position[1]
             else:   
                 # Get node position
