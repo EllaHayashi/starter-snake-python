@@ -40,8 +40,12 @@ def astar(maze, start, end):
     # Add the start node
     open_list.append(start_node)
 
+
+    i=0
     # Loop until you find the end
     while len(open_list) > 0:
+
+
 
         # Get the current node
         current_node = open_list[0]
@@ -63,6 +67,13 @@ def astar(maze, start, end):
                 path.append(current.position)
                 current = current.parent
             return path[::-1] # Return reversed path
+
+        if (i>100):
+          return[(current_node.position[0]-1, current_node.position[1]-1)]
+        else:
+          i=i+1
+
+
 
         # Generate children
         children = []
