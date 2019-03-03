@@ -44,6 +44,7 @@ def astar(maze, start, end):
     # Loop until you find the end
     while len(open_list) > 0:
 
+#        print("getting current node...")
         # Get the current node
         current_node = open_list[0]
         current_index = 0
@@ -76,7 +77,7 @@ def astar(maze, start, end):
 
             
             if(i>200 and num_items_in_bpath>0):
-                node_position = b_path[0][0] + new_position[0], b_path[0][1]+new_position[1]
+                node_position = (b_path[0][0] + new_position[0], b_path[0][1]+new_position[1])
             else:   
                 # Get node position
                 node_position = (current_node.position[0] + new_position[0], current_node.position[1] + new_position[1])
@@ -91,6 +92,12 @@ def astar(maze, start, end):
 
             # Create new node
             new_node = Node(current_node, node_position)
+
+            if(i>200 and num_items_in_bpath<2):
+              b_path.append(node_position)
+              num_items_in_bpath= num_items_in_bpath + 1
+            elif(i>200 and num_items_in_bpath>=2):
+              return b_path
 
             # Append
             children.append(new_node)
@@ -322,7 +329,7 @@ def move():
     ownXLoc, ownYLoc = getSelfPos(data) #obtaining own snake location on maze
     enemyHeadMoveX, enemyHeadMoveY = enemySurroundHeadPos(data) #obtaining locations of the potential location of future enemy heads 
 #    print('enemy head 4 locss')
-    print(enemyHeadMoveX, enemyHeadMoveY)
+#    print(enemyHeadMoveX, enemyHeadMoveY)
     
     maze[enemyXLoc, enemyYLoc] = 1 #marking locations of other snakes on maze
     maze[ownXLoc, ownYLoc] = 1 #marking self location on maze
@@ -340,14 +347,18 @@ def move():
         maze[boardx-1,y] = 1
     
 
+    print("finding start...")
     #obtaining 'start' for astar 
     start = getSelfHeadPos(data) #using current head location as 'start'
 #    print(start)
     
+    print("finding closest fruit...")
     #obtaining 'end' for astar 
     end = closestFruit(data,maze)
 #    print(end)
     
+
+    print("calculating shortest path...")
     #calculating astar for the shortest path
     path = astar(maze, start, end)
 #    print('path:')
